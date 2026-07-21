@@ -2,6 +2,31 @@
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
+//========== PISO ==========
+const uint8_t PISO_pinData = 10;
+const uint8_t PISO_pinLatch = 11;
+const uint8_t PISO_pinClock = 12;
+
+const uint8_t PISO_anzahl = 4;
+const uint8_t PISO_anzahlKanäle = PISO_anzahl * 8;
+bool PISO_data[PISO_anzahlKanäle];
+
+void PISO_read() {
+  digitalWrite(PISO_pinLatch, LOW);
+  //delayMicroseconds(5);
+  digitalWrite(PISO_pinLatch, HIGH);
+  //delayMicroseconds(5);
+
+  for (uint8_t a = 0; a < PISO_anzahlKanäle; a++) {
+    PISO_data[a] = digitalRead(PISO_pinData);
+    digitalWrite(PISO_pinClock, HIGH);
+    //delayMicroseconds(5);
+    digitalWrite(PISO_pinClock, LOW);
+    //delayMicroseconds(5);
+  }
+}
+
+//========== LCD ==========
 uint8_t LCD_batterySymbol[6][8]{
   { B01110, B11111, B10001, B10001, B10001, B10001, B10001, B11111 },  //Symbol Batterie 0%
   { B01110, B11111, B10001, B10001, B10001, B10001, B11111, B11111 },  //Symbol Batterie 20%
@@ -10,7 +35,6 @@ uint8_t LCD_batterySymbol[6][8]{
   { B01110, B11111, B10001, B11111, B11111, B11111, B11111, B11111 },  //Symbol Batterie 80%
   { B01110, B11111, B11111, B11111, B11111, B11111, B11111, B11111 }   //Symbol Batterie 100%
 };
-
 const uint16_t LCD_batteryBlinkIntervall = 500;  //Blinkintervall der Balken der Batterie während des ladens
 uint32_t LCD_batteryBlinkLastMillis;             //Letzte millis beim ändern des Blinkzustands
 bool LCD_batteryBlinkState;                      //Ob der blinkende Balken gerade angezeigt wird oder nicht
@@ -34,12 +58,20 @@ void LCD_battery() {
 }
 
 void setup() {
-  lcd.init();
-  lcd.backlight();
+  lcd.init();       //LCD initialisieren
+  lcd.backlight();  //LCD Hintergrundbeleuchtung anschalten
+
+  pinMode(PISO_pinData, INPUT);      //PISO Shiftregister Data pin
+  pinMode(PISO_pinLatch, OUTPUT);    //PISO Shiftregister Latch pin
+  pinMode(PISO_pinClock, OUTPUT);    //PISO Shiftregister Clock pin
+  digitalWrite(PISO_pinClock, LOW);  //ein Clockzyklus zum Initialisieren
+  digitalWrite(PISO_pinClock, HIGH);
+  digitalWrite(PISO_pinClock, LOW);
 }
 
 void loop() {
-  LCD_battery();
+  PISO_read();    //Daten von Schieberegister empfangen
+  LCD_battery();  //Batteriestand auf Display anzeigen
 
   LCD_batteryIsCharging = 1;
   LCD_batteryCharge = 1;

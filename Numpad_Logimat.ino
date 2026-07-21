@@ -8,8 +8,8 @@ const uint8_t PISO_pinLatch = 11;
 const uint8_t PISO_pinClock = 12;
 
 const uint8_t PISO_anzahl = 4;
-const uint8_t PISO_anzahlKanäle = PISO_anzahl * 8;
-bool PISO_data[PISO_anzahlKanäle];
+const uint8_t PISO_anzahlKanaele = PISO_anzahl * 8;
+bool PISO_data[PISO_anzahlKanaele];
 
 void PISO_read() {
   digitalWrite(PISO_pinLatch, LOW);
@@ -17,7 +17,7 @@ void PISO_read() {
   digitalWrite(PISO_pinLatch, HIGH);
   //delayMicroseconds(5);
 
-  for (uint8_t a = 0; a < PISO_anzahlKanäle; a++) {
+  for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
     PISO_data[a] = digitalRead(PISO_pinData);
     digitalWrite(PISO_pinClock, HIGH);
     //delayMicroseconds(5);

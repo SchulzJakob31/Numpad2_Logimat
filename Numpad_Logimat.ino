@@ -2,6 +2,9 @@
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
+
+
+
 //========== PISO ==========
 const uint8_t PISO_pinData = 10;
 const uint8_t PISO_pinLatch = 11;
@@ -10,6 +13,7 @@ const uint8_t PISO_pinClock = 12;
 const uint8_t PISO_anzahl = 4;
 const uint8_t PISO_anzahlKanaele = PISO_anzahl * 8;
 bool PISO_data[PISO_anzahlKanaele];
+
 
 void PISO_read() {
   digitalWrite(PISO_pinLatch, LOW);
@@ -25,6 +29,31 @@ void PISO_read() {
     //delayMicroseconds(5);
   }
 }
+
+//========== Debounce ==========
+const uint8_t PISO_debounceDelay = 30;
+bool PISO_debouncedState[PISO_anzahlKanaele];
+bool PISO_pressed[PISO_anzahlKanaele];
+bool PISO_lastData[PISO_anzahlKanaele];
+uint32_t PISO_lastChange[PISO_anzahlKanaele];
+
+void PISO_debounce() {
+  for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
+    PISO_pressed[a] = 0;
+    if (PISO_data[a] != PISO_lastData[a]) {
+      PISO_lastData[a] = PISO_data[a];
+      PISO_lastChange[a] = millis();
+    }
+    if ((millis() - PISO_lastChange[a]) >= PISO_debounceDelay) {
+      if (PISO_debouncedState[a] != PISO_data[a]) {
+        PISO_debouncedState[a] = PISO_data[a];
+        if (PISO_debouncedState[a]) PISO_pressed[a] = 1;
+      }
+    }
+  }
+}
+
+
 
 //========== LCD ==========
 uint8_t LCD_batterySymbol[6][8]{
@@ -52,26 +81,34 @@ void LCD_battery() {
     if (LCD_batteryBlinkState == 0) LCD_batteryChargePostBlink = LCD_batteryCharge;  // Bei 0 von Variable LCD_batteryBlinkState normalen Batteriestand (ohne Blink an) anzeigen
     else LCD_batteryChargePostBlink = LCD_batteryCharge + 1;                         // Bei 1 von Variable LCD_batteryBlinkState Batteriestand (mit Blink an) anzeigen
   }
-  lcd.createChar(0, LCD_batterySymbol[LCD_batteryChargePostBlink]);  //Symbol je nach Batteriestand neu zuweisen
-  lcd.setCursor(0, 0);                                               //Cursor an gewünschte stelle für das Batterysymbol setzen
-  lcd.write(0);                                                      //Batteriesysmbol schreiben
+  lcd.createChar(0, LCD_batterySymbol[LCD_batteryChargePostBlink]);  // Symbol je nach Batteriestand neu zuweisen
+  lcd.setCursor(0, 0);                                               // Cursor an gewünschte stelle für das Batterysymbol setzen
+  lcd.write(0);                                                      // Batteriesysmbol schreiben
 }
 
 void setup() {
-  lcd.init();       //LCD initialisieren
-  lcd.backlight();  //LCD Hintergrundbeleuchtung anschalten
+  lcd.init();       // LCD initialisieren
+  lcd.backlight();  // LCD Hintergrundbeleuchtung anschalten
 
-  pinMode(PISO_pinData, INPUT);      //PISO Shiftregister Data pin
-  pinMode(PISO_pinLatch, OUTPUT);    //PISO Shiftregister Latch pin
-  pinMode(PISO_pinClock, OUTPUT);    //PISO Shiftregister Clock pin
-  digitalWrite(PISO_pinClock, LOW);  //ein Clockzyklus zum Initialisieren
+  pinMode(PISO_pinData, INPUT);      // PISO Shiftregister Data pin
+  pinMode(PISO_pinLatch, OUTPUT);    // PISO Shiftregister Latch pin
+  pinMode(PISO_pinClock, OUTPUT);    // PISO Shiftregister Clock pin
+  digitalWrite(PISO_pinClock, LOW);  // ein Clockzyklus zum Initialisieren
   digitalWrite(PISO_pinClock, HIGH);
   digitalWrite(PISO_pinClock, LOW);
+  // Debouncing konfigurieren
+  for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
+    PISO_debouncedState[a] = PISO_data[a];
+    PISO_lastData[a] = PISO_data[a];
+    PISO_lastChange[a] = millis();
+    PISO_pressed[a] = 0;
+  }
 }
 
 void loop() {
-  PISO_read();    //Daten von Schieberegister empfangen
-  LCD_battery();  //Batteriestand auf Display anzeigen
+  PISO_read();      // Daten von Schieberegister empfangen
+  PISO_debounce();  // Daten vom Schieberegister zu einzigen Impuls debouncen
+  LCD_battery();    // Batteriestand auf Display anzeigen
 
   LCD_batteryIsCharging = 1;
   LCD_batteryCharge = 1;

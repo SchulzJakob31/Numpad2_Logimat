@@ -6,27 +6,23 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 
 //========== PISO ==========
-const uint8_t PISO_pinData = 10;
-const uint8_t PISO_pinLatch = 11;
-const uint8_t PISO_pinClock = 12;
+const uint8_t PISO_pinData = 15;  // Pin vom PISO von dem die Daten Seriell empfangen werden
+const uint8_t PISO_pinLatch = 5;  // Pin zum PISO mit dem die Daten in das Schieberegister geladen werden
+const uint8_t PISO_pinClock = 4;  // Pin zum PISO mit dem die Daten weiter getaktet wird
 
-const uint8_t PISO_anzahl = 4;
-const uint8_t PISO_anzahlKanaele = PISO_anzahl * 8;
-bool PISO_data[PISO_anzahlKanaele];
+const uint8_t PISO_anzahl = 4;  // Anzahl der Schieberegister
+const uint8_t PISO_anzahlKanaele = PISO_anzahl * 8;  // Anzahl der Eingangskanäle aller Schieberegister
+bool PISO_data[PISO_anzahlKanaele];  // Rohe daten die vom Schieberegister empfangen wurden
 
 
 void PISO_read() {
   digitalWrite(PISO_pinLatch, LOW);
-  //delayMicroseconds(5);
-  digitalWrite(PISO_pinLatch, HIGH);
-  //delayMicroseconds(5);
+  digitalWrite(PISO_pinLatch, HIGH);  // Daten ins Schieberegister laden
 
   for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
-    PISO_data[a] = digitalRead(PISO_pinData);
-    digitalWrite(PISO_pinClock, HIGH);
-    //delayMicroseconds(5);
+    PISO_data[a] = digitalRead(PISO_pinData);  // Zustand vom ersten Eingang vom Schieberegister lesen und abspeichern
+    digitalWrite(PISO_pinClock, HIGH);  // Zum nächsten Eingang weiter Takten und wiederholen
     digitalWrite(PISO_pinClock, LOW);
-    //delayMicroseconds(5);
   }
 }
 
@@ -90,6 +86,8 @@ void setup() {
   lcd.init();       // LCD initialisieren
   lcd.backlight();  // LCD Hintergrundbeleuchtung anschalten
 
+  Serial.begin(115200);
+
   pinMode(PISO_pinData, INPUT);      // PISO Shiftregister Data pin
   pinMode(PISO_pinLatch, OUTPUT);    // PISO Shiftregister Latch pin
   pinMode(PISO_pinClock, OUTPUT);    // PISO Shiftregister Clock pin
@@ -107,9 +105,15 @@ void setup() {
 
 void loop() {
   PISO_read();      // Daten von Schieberegister empfangen
-  PISO_debounce();  // Daten vom Schieberegister zu einzigen Impuls debouncen
-  LCD_battery();    // Batteriestand auf Display anzeigen
+  //PISO_debounce();  // Daten vom Schieberegister zu einzigen Impuls debouncen
+  //LCD_battery();    // Batteriestand auf Display anzeigen
 
-  LCD_batteryIsCharging = 1;
-  LCD_batteryCharge = 1;
+  //LCD_batteryIsCharging = 1;
+  //LCD_batteryCharge = 1;
+
+  for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
+    Serial.print(PISO_data[a]);
+  }
+  Serial.println();
+  delay(500);
 }

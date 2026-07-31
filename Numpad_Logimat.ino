@@ -1,7 +1,6 @@
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h>
-LiquidCrystal_I2C lcd(0x27, 20, 4);
 
+//========== BLE Keyboard Mouse ==========
+#include <BleCombo.h>
 
 
 
@@ -10,9 +9,9 @@ const uint8_t PISO_pinData = 15;  // Pin vom PISO von dem die Daten Seriell empf
 const uint8_t PISO_pinLatch = 5;  // Pin zum PISO mit dem die Daten in das Schieberegister geladen werden
 const uint8_t PISO_pinClock = 4;  // Pin zum PISO mit dem die Daten weiter getaktet wird
 
-const uint8_t PISO_anzahl = 4;  // Anzahl der Schieberegister
+const uint8_t PISO_anzahl = 4;                       // Anzahl der Schieberegister
 const uint8_t PISO_anzahlKanaele = PISO_anzahl * 8;  // Anzahl der Eingangskanäle aller Schieberegister
-bool PISO_data[PISO_anzahlKanaele];  // Rohe daten die vom Schieberegister empfangen wurden
+bool PISO_data[PISO_anzahlKanaele];                  // Rohe daten die vom Schieberegister empfangen wurden
 
 
 void PISO_read() {
@@ -21,15 +20,15 @@ void PISO_read() {
 
   for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
     PISO_data[a] = digitalRead(PISO_pinData);  // Zustand vom ersten Eingang vom Schieberegister lesen und abspeichern
-    digitalWrite(PISO_pinClock, HIGH);  // Zum nächsten Eingang weiter Takten und wiederholen
+    digitalWrite(PISO_pinClock, HIGH);         // Zum nächsten Eingang weiter Takten und wiederholen
     digitalWrite(PISO_pinClock, LOW);
   }
 }
 
 //========== Debounce ==========
 const uint8_t PISO_debounceDelay = 30;
-bool PISO_debouncedState[PISO_anzahlKanaele];
-bool PISO_pressed[PISO_anzahlKanaele];
+bool PISO_debouncedState[PISO_anzahlKanaele];  //So lang stabil High wie Taster gedrückt
+bool PISO_pressed[PISO_anzahlKanaele];  //Variale zum Triggern!!!  (für eine Loopschleife High wenn gedrückt dann wieder Low)
 bool PISO_lastData[PISO_anzahlKanaele];
 uint32_t PISO_lastChange[PISO_anzahlKanaele];
 
@@ -52,6 +51,10 @@ void PISO_debounce() {
 
 
 //========== LCD ==========
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+
 uint8_t LCD_batterySymbol[6][8]{
   { B01110, B11111, B10001, B10001, B10001, B10001, B10001, B11111 },  //Symbol Batterie 0%
   { B01110, B11111, B10001, B10001, B10001, B10001, B11111, B11111 },  //Symbol Batterie 20%
@@ -83,11 +86,16 @@ void LCD_battery() {
 }
 
 void setup() {
+  //Allgemein
+  Serial.begin(115200);
+  // LCD
   lcd.init();       // LCD initialisieren
   lcd.backlight();  // LCD Hintergrundbeleuchtung anschalten
+  // BLE Keyboard Mouse
+  Keyboard.begin();  // BLE Keyboard starten
+  Mouse.begin();     // BLE Mouse starten
 
-  Serial.begin(115200);
-
+  //PISO
   pinMode(PISO_pinData, INPUT);      // PISO Shiftregister Data pin
   pinMode(PISO_pinLatch, OUTPUT);    // PISO Shiftregister Latch pin
   pinMode(PISO_pinClock, OUTPUT);    // PISO Shiftregister Clock pin
@@ -101,19 +109,35 @@ void setup() {
     PISO_lastChange[a] = millis();
     PISO_pressed[a] = 0;
   }
+
+  while (!Keyboard.isConnected()) {
+  }
 }
 
 void loop() {
   PISO_read();      // Daten von Schieberegister empfangen
-  //PISO_debounce();  // Daten vom Schieberegister zu einzigen Impuls debouncen
-  //LCD_battery();    // Batteriestand auf Display anzeigen
-
+  PISO_debounce();  // Daten vom Schieberegister zu einzigen Impuls debouncen
+  //LCD_battery();  // Batteriestand auf Display anzeigen
   //LCD_batteryIsCharging = 1;
   //LCD_batteryCharge = 1;
 
-  for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
-    Serial.print(PISO_data[a]);
-  }
-  Serial.println();
-  delay(500);
+  if (PISO_pressed[0]) Keyboard.println("STAN");    //STAN schreiben dann Enter
+  if (PISO_pressed[1]) Keyboard.print("STAN");      //STAN schreiben ohne Enter danach
+  if (PISO_pressed[2]) Keyboard.write(KEY_RETURN);  //Enter drückent
+  if (PISO_pressed[3]) Mouse.move(10, 10);
+  if (PISO_pressed[4]) Mouse.move(-10, -10);
 }
+
+/*
+  Keyboard.println("Hello World");  Text mit enter
+  Keyboard.print("Hello World");  Text ohne enter
+  Keyboard.write(KEY_RETURN);
+  Keyboard.press(KEY_LEFT_CTRL);
+  Keyboard.press(KEY_LEFT_ALT);
+  Keyboard.press(KEY_DELETE);
+  Keyboard.releaseAll();
+  Mouse.move(10,10); Maus nach unten rechts bewegen
+  Mouse.move(0,0,-1); Runter scrollen
+  Mouse.click(MOUSE_LEFT);
+
+*/

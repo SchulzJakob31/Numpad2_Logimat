@@ -2,7 +2,9 @@
 //========== BLE Keyboard Mouse ==========
 #include <BleCombo.h>
 
-
+//========== NumPad allgemein ==========
+bool Shift_state = 0;  // Zustand von Shift (an oder aus)
+const uint8_t Shift_button = 7; //PISO_Kanal an der Shift angeschlossen ist
 
 //========== PISO ==========
 const uint8_t PISO_pinData = 15;  // Pin vom PISO von dem die Daten Seriell empfangen werden
@@ -27,8 +29,8 @@ void PISO_read() {
 
 //========== Debounce ==========
 const uint8_t PISO_debounceDelay = 30;
-bool PISO_debouncedState[PISO_anzahlKanaele];  //So lang stabil High wie Taster gedrückt
-bool PISO_pressed[PISO_anzahlKanaele];  //Variale zum Triggern!!!  (für eine Loopschleife High wenn gedrückt dann wieder Low)
+bool PISO_debouncedState[PISO_anzahlKanaele];  // So lang stabil High wie Taster gedrückt
+bool PISO_pressed[PISO_anzahlKanaele];         // Variale zum Triggern!!!  (für eine Loopschleife High wenn gedrückt dann wieder Low)
 bool PISO_lastData[PISO_anzahlKanaele];
 uint32_t PISO_lastChange[PISO_anzahlKanaele];
 
@@ -49,31 +51,30 @@ void PISO_debounce() {
 }
 
 
-
 //========== LCD ==========
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 uint8_t LCD_batterySymbol[6][8]{
-  { B01110, B11111, B10001, B10001, B10001, B10001, B10001, B11111 },  //Symbol Batterie 0%
-  { B01110, B11111, B10001, B10001, B10001, B10001, B11111, B11111 },  //Symbol Batterie 20%
-  { B01110, B11111, B10001, B10001, B10001, B11111, B11111, B11111 },  //Symbol Batterie 40%
-  { B01110, B11111, B10001, B10001, B11111, B11111, B11111, B11111 },  //Symbol Batterie 60%
-  { B01110, B11111, B10001, B11111, B11111, B11111, B11111, B11111 },  //Symbol Batterie 80%
-  { B01110, B11111, B11111, B11111, B11111, B11111, B11111, B11111 }   //Symbol Batterie 100%
+  { B01110, B11111, B10001, B10001, B10001, B10001, B10001, B11111 },  // Symbol Batterie 0%
+  { B01110, B11111, B10001, B10001, B10001, B10001, B11111, B11111 },  // Symbol Batterie 20%
+  { B01110, B11111, B10001, B10001, B10001, B11111, B11111, B11111 },  // Symbol Batterie 40%
+  { B01110, B11111, B10001, B10001, B11111, B11111, B11111, B11111 },  // Symbol Batterie 60%
+  { B01110, B11111, B10001, B11111, B11111, B11111, B11111, B11111 },  // Symbol Batterie 80%
+  { B01110, B11111, B11111, B11111, B11111, B11111, B11111, B11111 }   // Symbol Batterie 100%
 };
-const uint16_t LCD_batteryBlinkIntervall = 500;  //Blinkintervall der Balken der Batterie während des ladens
-uint32_t LCD_batteryBlinkLastMillis;             //Letzte millis beim ändern des Blinkzustands
-bool LCD_batteryBlinkState;                      //Ob der blinkende Balken gerade angezeigt wird oder nicht
-uint8_t LCD_batteryChargePostBlink;              //Variable enthält Batteriestand der beim laden hoch und runter blinkt
-bool LCD_batteryIsCharging = 0;                  //Ob die Batterie gerade läd oder nicht
-uint8_t LCD_batteryCharge = 0;                   //Batteriestand der Batterie
+const uint16_t LCD_batteryBlinkIntervall = 500;  // Blinkintervall der Balken der Batterie während des ladens
+uint32_t LCD_batteryBlinkLastMillis;             // Letzte millis beim ändern des Blinkzustands
+bool LCD_batteryBlinkState;                      // Ob der blinkende Balken gerade angezeigt wird oder nicht
+uint8_t LCD_batteryChargePostBlink;              // Variable enthält Batteriestand der beim laden hoch und runter blinkt
+bool LCD_batteryIsCharging = 0;                  // Ob die Batterie gerade läd oder nicht
+uint8_t LCD_batteryCharge = 0;                   // Batteriestand der Batterie
 
 void LCD_battery() {
-  if (LCD_batteryIsCharging == 0) LCD_batteryChargePostBlink = LCD_batteryCharge;  //Wenn die Batterie nicht läd nicht blinken lassen
-  else {                                                                           //Wenn die Batterie läd blinken lassen
-    if (millis() - LCD_batteryBlinkLastMillis >= LCD_batteryBlinkIntervall) {      //Variable LCD_batteryBlinkState blinken lassen
+  if (LCD_batteryIsCharging == 0) LCD_batteryChargePostBlink = LCD_batteryCharge;  // Wenn die Batterie nicht läd nicht blinken lassen
+  else {                                                                           // Wenn die Batterie läd blinken lassen
+    if (millis() - LCD_batteryBlinkLastMillis >= LCD_batteryBlinkIntervall) {      // Variable LCD_batteryBlinkState blinken lassen
       LCD_batteryBlinkState = !LCD_batteryBlinkState;
       LCD_batteryBlinkLastMillis = millis();
     }
@@ -88,6 +89,7 @@ void LCD_battery() {
 void setup() {
   //Allgemein
   Serial.begin(115200);
+  pinMode(2, OUTPUT);
   // LCD
   lcd.init();       // LCD initialisieren
   lcd.backlight();  // LCD Hintergrundbeleuchtung anschalten
@@ -121,9 +123,14 @@ void loop() {
   //LCD_batteryIsCharging = 1;
   //LCD_batteryCharge = 1;
 
-  if (PISO_pressed[0]) Keyboard.println("STAN");    //STAN schreiben dann Enter
-  if (PISO_pressed[1]) Keyboard.print("STAN");      //STAN schreiben ohne Enter danach
-  if (PISO_pressed[2]) Keyboard.write(KEY_RETURN);  //Enter drückent
+  for (uint8_t a = 0; a < PISO_anzahlKanaele; a++)
+    if (PISO_pressed[a] && a != Shift_button) Shift_state = 0;  // Wenn belibige Taste bis auf Shift gedrückt wird Shift deaktivieren
+  if (PISO_pressed[Shift_button]) Shift_state = !Shift_state;   // Wenn Shift gedrückt wird Shift umschalten
+  digitalWrite(2, Shift_state);                                 // Zustand von Schift mit LED anzeigen
+
+  if (PISO_pressed[0]) Keyboard.println("STAN");    // STAN schreiben dann Enter
+  if (PISO_pressed[1]) Keyboard.print("STAN");      // STAN schreiben ohne Enter danach
+  if (PISO_pressed[2]) Keyboard.write(KEY_RETURN);  // Enter drückent
   if (PISO_pressed[3]) Mouse.move(10, 10);
   if (PISO_pressed[4]) Mouse.move(-10, -10);
 }

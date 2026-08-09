@@ -88,7 +88,7 @@ void PISO_debounce() {
 //========== LCD ==========
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-LiquidCrystal_I2C lcd(0x27, 20, 4);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 uint8_t LCD_batterySymbol[6][8]{
   { B01110, B11111, B10001, B10001, B10001, B10001, B10001, B11111 },  // Symbol Batterie 0%
@@ -157,9 +157,9 @@ void setup() {
 void loop() {
   PISO_read();      // Daten von Schieberegister empfangen
   PISO_debounce();  // Daten vom Schieberegister zu einzigen Impuls debouncen
-  //LCD_battery();  // Batteriestand auf Display anzeigen
-  //LCD_batteryIsCharging = 1;
-  //LCD_batteryCharge = 1;
+  LCD_battery();    // Batteriestand auf Display anzeigen
+  LCD_batteryIsCharging = 1;
+  LCD_batteryCharge = 1;
 
   for (uint8_t a = 0; a < PISO_anzahlKanaele; a++)
     if (PISO_pressed[a] && a != Shift_button) Shift_state = 0;  // Wenn belibige Taste bis auf Shift gedrückt wird Shift deaktivieren
@@ -208,7 +208,7 @@ void loop() {
   }
 }
 
-  /*
+/*
   Keyboard.println("Hello World");  Text mit enter
   Keyboard.print("Hello World");  Text ohne enter
   Keyboard.write(KEY_RETURN);

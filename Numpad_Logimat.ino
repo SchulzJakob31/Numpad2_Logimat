@@ -1,4 +1,3 @@
-
 //========== BLE Keyboard Mouse ==========
 #include <BleCombo.h>
 
@@ -7,9 +6,9 @@ bool Shift_state = 0;            // Zustand von Shift (an oder aus)
 const uint8_t Shift_button = 7;  //PISO_Kanal an der Shift angeschlossen ist
 
 //========== PISO ==========
-const uint8_t PISO_pinData = 15;  // Pin vom PISO von dem die Daten Seriell empfangen werden
-const uint8_t PISO_pinLatch = 5;  // Pin zum PISO mit dem die Daten in das Schieberegister geladen werden
-const uint8_t PISO_pinClock = 4;  // Pin zum PISO mit dem die Daten weiter getaktet wird
+const uint8_t PISO_pinData = 10;   // Pin vom PISO von dem die Daten Seriell empfangen werden
+const uint8_t PISO_pinLatch = 12;  // Pin zum PISO mit dem die Daten in das Schieberegister geladen werden
+const uint8_t PISO_pinClock = 11;  // Pin zum PISO mit dem die Daten weiter getaktet wird
 
 const uint8_t PISO_anzahl = 4;                       // Anzahl der Schieberegister
 const uint8_t PISO_anzahlKanaele = PISO_anzahl * 8;  // Anzahl der Eingangskanäle aller Schieberegister
@@ -124,8 +123,8 @@ void LCD_battery() {
 void setup() {
   //Allgemein
   Serial.begin(115200);
-  pinMode(2, OUTPUT);  // Statusanzeige für Shift
-  
+  pinMode(13, OUTPUT);  // Statusanzeige für Shift
+
   // LCD
   lcd.init();       // LCD initialisieren
   lcd.backlight();  // LCD Hintergrundbeleuchtung anschalten
@@ -149,9 +148,10 @@ void setup() {
     PISO_lastChange[a] = millis();
     PISO_pressed[a] = 0;
   }
-
+  digitalWrite(13, HIGH);
   while (!Keyboard.isConnected()) {  // Erst in den Loop übergehen wenn Bluetooth verbunden ist
   }
+  digitalWrite(13, LOW);
 }
 
 void loop() {
@@ -160,23 +160,59 @@ void loop() {
   //LCD_battery();  // Batteriestand auf Display anzeigen
   //LCD_batteryIsCharging = 1;
   //LCD_batteryCharge = 1;
+  /*
+  if (PISO_pressed[Num0]) Keyboard.print("STAN");
+  if (PISO_pressed[Num1]) Keyboard.print("STAN0");
+  
+  if (PISO_pressed[Num0]) Serial.println("STAN");
+  if (PISO_pressed[Num1]) Serial.println("STAN0");
+  */
 
+  for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
+    if (PISO_pressed[a]) {
+      Serial.print("Button ");
+      Serial.print(a);
+      Serial.print(" got pressed");
+      Serial.println();
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
   for (uint8_t a = 0; a < PISO_anzahlKanaele; a++)
     if (PISO_pressed[a] && a != Shift_button) Shift_state = 0;  // Wenn belibige Taste bis auf Shift gedrückt wird Shift deaktivieren
   if (PISO_pressed[Shift_button]) Shift_state = !Shift_state;   // Wenn Shift gedrückt wird Shift umschalten
-  digitalWrite(2, Shift_state);                                 // Zustand von Schift mit LED anzeigen
+  digitalWrite(13, Shift_state);                                // Zustand von Schift mit LED anzeigen
 
 
-  if(!Shift_state) {
-  if (PISO_pressed[Num0]) Keyboard.println("STAN");    // STAN schreiben dann Enter
-  if (PISO_pressed[Num1]) Keyboard.print("STAN");      // STAN schreiben ohne Enter danach
-  if (PISO_pressed[Num2]) Keyboard.write(KEY_RETURN);  // Enter drückent
-  if (PISO_pressed[Num3]) Mouse.move(10, 10);
-  if (PISO_pressed[Num4]) Mouse.move(-10, -10);
-  if (PISO_pressed[Num5]) Keyboard.print("STAN0");
-  if (PISO_pressed[Num6]) Keyboard.print("STAN00");
-  //if (PISO_pressed[Num7])  // nicht verwendbar da Shift Taste
-  /*
+  if (!Shift_state) {
+    if (PISO_pressed[Num0]) {
+      Keyboard.println("STAN");  // STAN schreiben dann Enter
+      Serial.println("STAN sent");
+    }
+    if (PISO_pressed[Num1]) Keyboard.print("STAN");      // STAN schreiben ohne Enter danach
+    if (PISO_pressed[Num2]) Keyboard.write(KEY_RETURN);  // Enter drückent
+    if (PISO_pressed[Num3]) Mouse.move(10, 10);
+    if (PISO_pressed[Num4]) Mouse.move(-10, -10);
+    if (PISO_pressed[Num5]) Keyboard.print("STAN0");
+    if (PISO_pressed[Num6]) Keyboard.print("STAN00");
+    //if (PISO_pressed[Num7])  // nicht verwendbar da Shift Taste
+    /*
   if (PISO_pressed[Num8])
   if (PISO_pressed[Num9])
   if (PISO_pressed[Num10])
@@ -202,10 +238,10 @@ void loop() {
   if (PISO_pressed[Num30])
   if (PISO_pressed[Num31])
   */
-  }
+  //}
 }
 
-/*
+  /*
   Keyboard.println("Hello World");  Text mit enter
   Keyboard.print("Hello World");  Text ohne enter
   Keyboard.write(KEY_RETURN);
@@ -216,5 +252,6 @@ void loop() {
   Mouse.move(10,10); Maus nach unten rechts bewegen
   Mouse.move(0,0,-1); Runter scrollen
   Mouse.click(MOUSE_LEFT);
+  
 
 */

@@ -52,12 +52,17 @@ enum PISO_anzahlKanaele {
 
 void PISO_read() {
   digitalWrite(PISO_pinLatch, LOW);
+  delay(1);
   digitalWrite(PISO_pinLatch, HIGH);  // Daten ins Schieberegister laden
+  delay(1);
 
   for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
     PISO_data[a] = digitalRead(PISO_pinData);  // Zustand vom ersten Eingang vom Schieberegister lesen und abspeichern
+    delay(1);
     digitalWrite(PISO_pinClock, HIGH);         // Zum nächsten Eingang weiter Takten und wiederholen
+    delay(1);
     digitalWrite(PISO_pinClock, LOW);
+    delay(1);
   }
 }
 
@@ -130,8 +135,8 @@ void setup() {
   lcd.backlight();  // LCD Hintergrundbeleuchtung anschalten
 
   // BLE Keyboard Mouse
-  Keyboard.begin();  // BLE Keyboard starten
-  Mouse.begin();     // BLE Mouse starten
+  //Keyboard.begin();  // BLE Keyboard starten
+  //Mouse.begin();     // BLE Mouse starten
 
   //PISO
   pinMode(PISO_pinData, INPUT);      // PISO Shiftregister Data pin
@@ -148,10 +153,12 @@ void setup() {
     PISO_lastChange[a] = millis();
     PISO_pressed[a] = 0;
   }
+  /*
   digitalWrite(13, HIGH);
   while (!Keyboard.isConnected()) {  // Erst in den Loop übergehen wenn Bluetooth verbunden ist
   }
   digitalWrite(13, LOW);
+  */
 }
 
 void loop() {

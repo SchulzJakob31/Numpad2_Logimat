@@ -52,17 +52,12 @@ enum PISO_anzahlKanaele {
 
 void PISO_read() {
   digitalWrite(PISO_pinLatch, LOW);
-  delay(1);
   digitalWrite(PISO_pinLatch, HIGH);  // Daten ins Schieberegister laden
-  delay(1);
 
   for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
     PISO_data[a] = digitalRead(PISO_pinData);  // Zustand vom ersten Eingang vom Schieberegister lesen und abspeichern
-    delay(1);
     digitalWrite(PISO_pinClock, HIGH);         // Zum nächsten Eingang weiter Takten und wiederholen
-    delay(1);
     digitalWrite(PISO_pinClock, LOW);
-    delay(1);
   }
 }
 
@@ -135,8 +130,8 @@ void setup() {
   lcd.backlight();  // LCD Hintergrundbeleuchtung anschalten
 
   // BLE Keyboard Mouse
-  //Keyboard.begin();  // BLE Keyboard starten
-  //Mouse.begin();     // BLE Mouse starten
+  Keyboard.begin();  // BLE Keyboard starten
+  Mouse.begin();     // BLE Mouse starten
 
   //PISO
   pinMode(PISO_pinData, INPUT);      // PISO Shiftregister Data pin
@@ -153,12 +148,10 @@ void setup() {
     PISO_lastChange[a] = millis();
     PISO_pressed[a] = 0;
   }
-  /*
   digitalWrite(13, HIGH);
   while (!Keyboard.isConnected()) {  // Erst in den Loop übergehen wenn Bluetooth verbunden ist
   }
   digitalWrite(13, LOW);
-  */
 }
 
 void loop() {
@@ -167,40 +160,7 @@ void loop() {
   //LCD_battery();  // Batteriestand auf Display anzeigen
   //LCD_batteryIsCharging = 1;
   //LCD_batteryCharge = 1;
-  /*
-  if (PISO_pressed[Num0]) Keyboard.print("STAN");
-  if (PISO_pressed[Num1]) Keyboard.print("STAN0");
-  
-  if (PISO_pressed[Num0]) Serial.println("STAN");
-  if (PISO_pressed[Num1]) Serial.println("STAN0");
-  */
 
-  for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
-    if (PISO_pressed[a]) {
-      Serial.print("Button ");
-      Serial.print(a);
-      Serial.print(" got pressed");
-      Serial.println();
-    }
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
   for (uint8_t a = 0; a < PISO_anzahlKanaele; a++)
     if (PISO_pressed[a] && a != Shift_button) Shift_state = 0;  // Wenn belibige Taste bis auf Shift gedrückt wird Shift deaktivieren
   if (PISO_pressed[Shift_button]) Shift_state = !Shift_state;   // Wenn Shift gedrückt wird Shift umschalten
@@ -245,7 +205,7 @@ void loop() {
   if (PISO_pressed[Num30])
   if (PISO_pressed[Num31])
   */
-  //}
+  }
 }
 
   /*

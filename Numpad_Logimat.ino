@@ -90,18 +90,6 @@ void PISO_debounce() {
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-// Allgemein
-const uint8_t LCD_updateRate = 200;
-uint32_t LCD_lastUpdate = 0;
-
-void LCD_update() {
-  if (millis() - LCD_lastUpdate >= LCD_updateRate) {
-    LCD_battery();    // Batteriestand auf Display anzeigen
-    LCD_lastUpdate = millis();
-  }
-}
-
-
 // Batterie
 uint8_t LCD_batterySymbol[6][8]{
   { B01110, B11111, B10001, B10001, B10001, B10001, B10001, B11111 },  // Symbol Batterie 0%
@@ -111,18 +99,30 @@ uint8_t LCD_batterySymbol[6][8]{
   { B01110, B11111, B10001, B11111, B11111, B11111, B11111, B11111 },  // Symbol Batterie 80%
   { B01110, B11111, B11111, B11111, B11111, B11111, B11111, B11111 }   // Symbol Batterie 100%
 };
-const uint16_t LCD_batteryBlinkIntervall = 500;  // Blinkintervall der Balken der Batterie während des ladens
+const uint16_t LCD_batteryBlinkIntervall = 600;  // Blinkintervall der Balken der Batterie während des ladens
 uint32_t LCD_batteryBlinkLastMillis;             // Letzte millis beim ändern des Blinkzustands
 bool LCD_batteryBlinkState;                      // Ob der blinkende Balken gerade angezeigt wird oder nicht
 uint8_t LCD_batteryChargePostBlink;              // Variable enthält Batteriestand der beim laden hoch und runter blinkt
 bool LCD_batteryIsCharging = 0;                  // Ob die Batterie gerade läd oder nicht
 uint8_t LCD_batteryCharge = 0;                   // Batteriestand der Batterie
+uint8_t LCD_batterySymbolPosX = 0;               // X Position der Batterieanzeige (manipuliert durch LCD_battery Funktion)
+uint8_t LCD_batterySymbolPosY = 0;               // Y Position der Batterieanzeige (manipuliert durch LCD_battery Funktion)
+bool LCD_batterySymbolShow = 0;                  // Ob das Batterysymbol angezeigt wird (manipuliert durch LCD_battery Funktion)
+bool LCD_batterySymbolReset = 0;                 // Ob nach dem nicht mehr angezeigt wird das Zeichen bereits blank gemacht wurde (wird intern Manipuliert)
 
-void LCD_battery() {
-  if (!LCD_batteryIsCharging) {                               // Code wenn die Batterie nicht geladen wird
-    lcd.createChar(0, LCD_batterySymbol[LCD_batteryCharge]);  // Ladezustand 1 zu 1 auf display übertragen (nur Custom Zeichen erstellen)
-    lcd.setCursor(0, 0);                                      // Zeichen an gewünschte Position setzten
-    lcd.write(0);                                             // Batteriesymbol schreiben
+void LCD_battery(uint8_t Charge, bool Charging, uint8_t Pos_X, uint8_t Pos_Y, bool show) {
+  LCD_batterySymbolShow = show;
+  LCD_batteryCharge = Charge;
+  LCD_batteryIsCharging = Charging;
+  LCD_batterySymbolPosX = Pos_X;
+  LCD_batterySymbolPosY = Pos_Y;
+}
+
+void LCD_batteryDisplay() {
+  if (!LCD_batteryIsCharging) {                                   // Code wenn die Batterie nicht geladen wird
+    lcd.createChar(0, LCD_batterySymbol[LCD_batteryCharge]);      // Ladezustand 1 zu 1 auf display übertragen (nur Custom Zeichen erstellen)
+    lcd.setCursor(LCD_batterySymbolPosX, LCD_batterySymbolPosY);  // Zeichen an gewünschte Position setzten
+    lcd.write(0);                                                 // Batteriesymbol schreiben
   }
 
   if (LCD_batteryIsCharging) {                                                 // Code wenn die Batterie geladen wird
@@ -131,10 +131,32 @@ void LCD_battery() {
       if (LCD_batteryChargePostBlink > 5) LCD_batteryChargePostBlink = 0;      //Sobald höchste Batterieladung angezeigt wird wieder auf 0 setzen
       LCD_batteryBlinkLastMillis = millis();
     }
-    lcd.createChar(0, LCD_batterySymbol[LCD_batteryChargePostBlink]);  //Ladezustand nach Lauflicht auf display übertragen (nur Custom Zeichen erstellen)
-    lcd.setCursor(0, 0);                                               // Zeichen an gewünschte Position setzten
+    lcd.createChar(0, LCD_batterySymbol[LCD_batteryChargePostBlink]);  // Ladezustand nach Lauflicht auf display übertragen (nur Custom Zeichen erstellen)
+    lcd.setCursor(LCD_batterySymbolPosX, LCD_batterySymbolPosY);       // Zeichen an gewünschte Position setzten
     lcd.write(0);                                                      // Batteriesymbol schreiben
   }
+  LCD_batterySymbolReset = 0;  // Variable setzen damit bei umschalten zu -kein Batteriesymbol- die Funktion weiß dass das Symbol noch zurückgesetzt werden muss
+}
+
+// Allgemein
+const uint8_t LCD_updateRate = 200;  // Intervall mit dem das LCD geupdated wird
+uint32_t LCD_lastUpdate = 0;         // Wann das LCD das letzte mal geupdated wurde
+
+// Funktion zum ausführen der Batterieanzeige
+void LCD_update() {
+  if (millis() - LCD_lastUpdate >= LCD_updateRate) {  // Code nur alle [LCD_updateRate]ms ausführen
+    LCD_lastUpdate = millis();                        // Allgemein für Intervall
+
+    // Code für Batterieanzeige
+    if (LCD_batterySymbolShow)                                      // Wenn das Symbol angezeigt werden soll
+      LCD_batteryDisplay();                                         // Batteriestand auf Display anzeigen
+    if (!LCD_batterySymbolShow && !LCD_batterySymbolReset) {        // Wenn das Symbol nicht angezeigt werden soll UND das Symbol noch nicht zurückgesetzt wurde
+      lcd.setCursor(LCD_batterySymbolPosX, LCD_batterySymbolPosY);  // Cursor an Position des Symbols bewegen
+      lcd.print(" ");                                               // Symbol zurücksetzen
+      LCD_batterySymbolReset = 1;                                   // Speichern dass das Symbol zyrückgesetzt wurde
+    }
+  }
+  
 }
 
 void setup() {
@@ -177,9 +199,8 @@ void loop() {
   PISO_read();      // Daten von Schieberegister empfangen
   PISO_debounce();  // Daten vom Schieberegister zu einzigen Impuls debouncen
   LCD_update();
-  LCD_batteryIsCharging = 1;
-  LCD_batteryCharge = 1;
 
+  LCD_battery(1, 0, 5, 1, 1);  //Batteriesymbol: (Ladestand, Ladevorgang, X Position, Y Position, Anzeigen)
 
 
   /*

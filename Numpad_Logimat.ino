@@ -106,32 +106,36 @@ bool LCD_batteryIsCharging = 0;                  // Ob die Batterie gerade läd 
 uint8_t LCD_batteryCharge = 0;                   // Batteriestand der Batterie
 
 void LCD_battery() {
-  if (LCD_batteryIsCharging == 0) LCD_batteryChargePostBlink = LCD_batteryCharge;  // Wenn die Batterie nicht läd nicht blinken lassen
-  else {                                                                           // Wenn die Batterie läd blinken lassen
-    if (millis() - LCD_batteryBlinkLastMillis >= LCD_batteryBlinkIntervall) {      // Variable LCD_batteryBlinkState blinken lassen
-      LCD_batteryBlinkState = !LCD_batteryBlinkState;
+  if (!LCD_batteryIsCharging) {                               // Code wenn die Batterie nicht geladen wird
+    lcd.createChar(0, LCD_batterySymbol[LCD_batteryCharge]);  // Ladezustand 1 zu 1 auf display übertragen (nur Custom Zeichen erstellen)
+    lcd.setCursor(0, 0);                                      // Zeichen an gewünschte Position setzten
+    lcd.write(0);                                             // Batteriesymbol schreiben
+  }
+
+  if (LCD_batteryIsCharging) {                                                 // Code wenn die Batterie geladen wird
+    if (millis() - LCD_batteryBlinkLastMillis >= LCD_batteryBlinkIntervall) {  // Code alle [intervall]ms ausführen
+      LCD_batteryChargePostBlink++;                                            // Anzuzeigende Batterieladung sequenziell inkrementieren
+      if (LCD_batteryChargePostBlink > 5) LCD_batteryChargePostBlink = 0;      //Sobald höchste Batterieladung angezeigt wird wieder auf 0 setzen
       LCD_batteryBlinkLastMillis = millis();
     }
-    if (LCD_batteryBlinkState == 0) LCD_batteryChargePostBlink = LCD_batteryCharge;  // Bei 0 von Variable LCD_batteryBlinkState normalen Batteriestand (ohne Blink an) anzeigen
-    else LCD_batteryChargePostBlink = LCD_batteryCharge + 1;                         // Bei 1 von Variable LCD_batteryBlinkState Batteriestand (mit Blink an) anzeigen
+    lcd.createChar(0, LCD_batterySymbol[LCD_batteryChargePostBlink]);  //Ladezustand nach Lauflicht auf display übertragen (nur Custom Zeichen erstellen)
+    lcd.setCursor(0, 0);                                               // Zeichen an gewünschte Position setzten
+    lcd.write(0);                                                      // Batteriesymbol schreiben
   }
-  lcd.createChar(0, LCD_batterySymbol[LCD_batteryChargePostBlink]);  // Symbol je nach Batteriestand neu zuweisen
-  lcd.setCursor(0, 0);                                               // Cursor an gewünschte stelle für das Batterysymbol setzen
-  lcd.write(0);                                                      // Batteriesysmbol schreiben
 }
 
 void setup() {
   //Allgemein
   Serial.begin(115200);
-  pinMode(13, OUTPUT);  // Statusanzeige für Shift
+  pinMode(13, OUTPUT);  // Statusanzeige für Shift / Bluetooth im Setup verbunden
 
   // LCD
   lcd.init();       // LCD initialisieren
   lcd.backlight();  // LCD Hintergrundbeleuchtung anschalten
 
   // BLE Keyboard Mouse
-  Keyboard.begin();  // BLE Keyboard starten
-  Mouse.begin();     // BLE Mouse starten
+  //Keyboard.begin();  // BLE Keyboard starten
+  //Mouse.begin();     // BLE Mouse starten
 
   //PISO
   pinMode(PISO_pinData, INPUT);      // PISO Shiftregister Data pin
@@ -148,10 +152,12 @@ void setup() {
     PISO_lastChange[a] = millis();
     PISO_pressed[a] = 0;
   }
+  /*
   digitalWrite(13, HIGH);
   while (!Keyboard.isConnected()) {  // Erst in den Loop übergehen wenn Bluetooth verbunden ist
   }
   digitalWrite(13, LOW);
+  */
 }
 
 void loop() {
@@ -159,8 +165,11 @@ void loop() {
   PISO_debounce();  // Daten vom Schieberegister zu einzigen Impuls debouncen
   LCD_battery();    // Batteriestand auf Display anzeigen
   LCD_batteryIsCharging = 1;
-  LCD_batteryCharge = 1;
+  LCD_batteryCharge = 5;
 
+
+
+  /*
   for (uint8_t a = 0; a < PISO_anzahlKanaele; a++)
     if (PISO_pressed[a] && a != Shift_button) Shift_state = 0;  // Wenn belibige Taste bis auf Shift gedrückt wird Shift deaktivieren
   if (PISO_pressed[Shift_button]) Shift_state = !Shift_state;   // Wenn Shift gedrückt wird Shift umschalten
@@ -205,7 +214,7 @@ void loop() {
   if (PISO_pressed[Num30])
   if (PISO_pressed[Num31])
   */
-  }
+  //}
 }
 
 /*

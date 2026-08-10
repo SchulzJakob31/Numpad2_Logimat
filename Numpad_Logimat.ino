@@ -85,11 +85,24 @@ void PISO_debounce() {
 }
 
 
-//========== LCD ==========
+// ========== LCD ==========
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
+// Allgemein
+const uint8_t LCD_updateRate = 200;
+uint32_t LCD_lastUpdate = 0;
+
+void LCD_update() {
+  if (millis() - LCD_lastUpdate >= LCD_updateRate) {
+    LCD_battery();    // Batteriestand auf Display anzeigen
+    LCD_lastUpdate = millis();
+  }
+}
+
+
+// Batterie
 uint8_t LCD_batterySymbol[6][8]{
   { B01110, B11111, B10001, B10001, B10001, B10001, B10001, B11111 },  // Symbol Batterie 0%
   { B01110, B11111, B10001, B10001, B10001, B10001, B11111, B11111 },  // Symbol Batterie 20%
@@ -163,9 +176,9 @@ void setup() {
 void loop() {
   PISO_read();      // Daten von Schieberegister empfangen
   PISO_debounce();  // Daten vom Schieberegister zu einzigen Impuls debouncen
-  LCD_battery();    // Batteriestand auf Display anzeigen
+  LCD_update();
   LCD_batteryIsCharging = 1;
-  LCD_batteryCharge = 5;
+  LCD_batteryCharge = 1;
 
 
 

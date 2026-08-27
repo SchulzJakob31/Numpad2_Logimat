@@ -7,8 +7,8 @@ const uint8_t Shift_button = 7;  //PISO_Kanal an der Shift angeschlossen ist
 
 //========== PISO ==========
 const uint8_t PISO_pinData = 10;   // Pin vom PISO von dem die Daten Seriell empfangen werden
-const uint8_t PISO_pinLatch = 12;  // Pin zum PISO mit dem die Daten in das Schieberegister geladen werden
-const uint8_t PISO_pinClock = 11;  // Pin zum PISO mit dem die Daten weiter getaktet wird
+const uint8_t PISO_pinLatch = 11;  // Pin zum PISO mit dem die Daten in das Schieberegister geladen werden
+const uint8_t PISO_pinClock = 12;  // Pin zum PISO mit dem die Daten weiter getaktet wird
 
 const uint8_t PISO_anzahl = 4;                       // Anzahl der Schieberegister
 const uint8_t PISO_anzahlKanaele = PISO_anzahl * 8;  // Anzahl der Eingangskanäle aller Schieberegister

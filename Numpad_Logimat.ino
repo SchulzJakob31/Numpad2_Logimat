@@ -14,42 +14,6 @@ const uint8_t PISO_anzahl = 4;                       // Anzahl der Schieberegist
 const uint8_t PISO_anzahlKanaele = PISO_anzahl * 8;  // Anzahl der Eingangskanäle aller Schieberegister
 bool PISO_data[PISO_anzahlKanaele];                  // Rohe daten die vom Schieberegister empfangen wurden
 
-enum PISO_anzahlKanaele {
-  Num0,
-  Num1,
-  Num2,
-  Num3,
-  Num4,
-  Num5,
-  Num6,
-  Num7,
-  Num8,
-  Num9,
-  Num10,
-  Num11,
-  Num12,
-  Num13,
-  Num14,
-  Num15,
-  Num16,
-  Num17,
-  Num18,
-  Num19,
-  Num20,
-  Num21,
-  Num22,
-  Num23,
-  Num24,
-  Num25,
-  Num26,
-  Num27,
-  Num28,
-  Num29,
-  Num30,
-  Num31
-};
-
-
 void PISO_read() {
   digitalWrite(PISO_pinLatch, LOW);
   digitalWrite(PISO_pinLatch, HIGH);  // Daten ins Schieberegister laden
@@ -82,6 +46,68 @@ void PISO_debounce() {
       }
     }
   }
+}
+
+bool Button_pressed[PISO_anzahlKanaele];
+
+enum PISO_anzahlKanaele {
+  Num0,
+  Num1,
+  Num2,
+  Num3,
+  Num4,
+  Num5,
+  Num6,
+  Num7,
+  Num8,
+  Num9,
+  Return,
+  Loeschen,
+  F1,
+  F2,
+  F3,
+  F4,
+  F5,
+  F6,
+  F7,
+  F8,
+  F9,
+  F10,
+  Empty1,
+  Empty2,
+  Empty3,
+  Empty4,
+  Empty5,
+  Empty6,
+  Empty7,
+  Empyt8,
+  Empty9,
+  Empty10
+};
+
+void Button_pressedTranslate() {
+  Button_pressed[Num0] = PISO_pressed[23];
+  Button_pressed[Num1] = PISO_pressed[22];
+  Button_pressed[Num2] = PISO_pressed[11];
+  Button_pressed[Num3] = PISO_pressed[14];
+  Button_pressed[Num4] = PISO_pressed[21];
+  Button_pressed[Num5] = PISO_pressed[20];
+  Button_pressed[Num6] = PISO_pressed[7];
+  Button_pressed[Num7] = PISO_pressed[8];
+  Button_pressed[Num8] = PISO_pressed[9];
+  Button_pressed[Num9] = PISO_pressed[3];
+  Button_pressed[Return] = PISO_pressed[1];
+  Button_pressed[Loeschen] = PISO_pressed[2];
+  Button_pressed[F1] = PISO_pressed[18];
+  Button_pressed[F2] = PISO_pressed[19];
+  Button_pressed[F3] = PISO_pressed[13];
+  Button_pressed[F4] = PISO_pressed[0];
+  Button_pressed[F5] = PISO_pressed[15];
+  Button_pressed[F6] = PISO_pressed[10];
+  Button_pressed[F7] = PISO_pressed[12];
+  Button_pressed[F8] = PISO_pressed[6];
+  Button_pressed[F9] = PISO_pressed[4];
+  Button_pressed[F10] = PISO_pressed[5];
 }
 
 
@@ -156,7 +182,6 @@ void LCD_update() {
       LCD_batterySymbolReset = 1;                                   // Speichern dass das Symbol zyrückgesetzt wurde
     }
   }
-  
 }
 
 void setup() {
@@ -169,8 +194,8 @@ void setup() {
   lcd.backlight();  // LCD Hintergrundbeleuchtung anschalten
 
   // BLE Keyboard Mouse
-  //Keyboard.begin();  // BLE Keyboard starten
-  //Mouse.begin();     // BLE Mouse starten
+  Keyboard.begin();  // BLE Keyboard starten
+  Mouse.begin();     // BLE Mouse starten
 
   //PISO
   pinMode(PISO_pinData, INPUT);      // PISO Shiftregister Data pin
@@ -187,27 +212,40 @@ void setup() {
     PISO_lastChange[a] = millis();
     PISO_pressed[a] = 0;
   }
-  /*
   digitalWrite(13, HIGH);
   while (!Keyboard.isConnected()) {  // Erst in den Loop übergehen wenn Bluetooth verbunden ist
   }
   digitalWrite(13, LOW);
-  */
 }
 
 void loop() {
   PISO_read();      // Daten von Schieberegister empfangen
   PISO_debounce();  // Daten vom Schieberegister zu einzigen Impuls debouncen
+  Button_pressedTranslate();
   LCD_update();
 
-  LCD_battery(1, 0, 5, 1, 1);  //Batteriesymbol: (Ladestand, Ladevorgang, X Position, Y Position, Anzeigen)
+  LCD_battery(1, 1, 15, 0, 1);  //Batteriesymbol: (Ladestand, Ladevorgang, X Position, Y Position, Anzeigen)
+  
+  if (Button_pressed[Num0]) Keyboard.print("0");
+  if (Button_pressed[Num1]) Keyboard.print("1");
+  if (Button_pressed[Num2]) Keyboard.print("2");
+  if (Button_pressed[Num3]) Keyboard.print("3");
+  if (Button_pressed[Num4]) Keyboard.print("4");
+  if (Button_pressed[Num5]) Keyboard.print("5");
+  if (Button_pressed[Num6]) Keyboard.print("6");
+  if (Button_pressed[Num7]) Keyboard.print("7");
+  if (Button_pressed[Num8]) Keyboard.print("8");
+  if (Button_pressed[Num9]) Keyboard.print("9");
+  if (Button_pressed[Return]) Keyboard.println();
 
-
+}
   /*
   for (uint8_t a = 0; a < PISO_anzahlKanaele; a++)
     if (PISO_pressed[a] && a != Shift_button) Shift_state = 0;  // Wenn belibige Taste bis auf Shift gedrückt wird Shift deaktivieren
   if (PISO_pressed[Shift_button]) Shift_state = !Shift_state;   // Wenn Shift gedrückt wird Shift umschalten
   digitalWrite(13, Shift_state);                                // Zustand von Schift mit LED anzeigen
+
+
 
 
   if (!Shift_state) {
@@ -249,7 +287,6 @@ void loop() {
   if (PISO_pressed[Num31])
   */
   //}
-}
 
 /*
   Keyboard.println("Hello World");  Text mit enter

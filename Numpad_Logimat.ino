@@ -164,6 +164,10 @@ void LCD_batteryDisplay() {
   LCD_batterySymbolReset = 0;  // Variable setzen damit bei umschalten zu -kein Batteriesymbol- die Funktion weiß dass das Symbol noch zurückgesetzt werden muss
 }
 
+// Relais (Um-/ Abschaltung)
+const uint8_t Relais_powerOn = 7;   // Spule des Bistabilen Doppelspulenrelais um das Numpad ein zu schalten
+const uint8_t Relais_powerOff = 8;  // Spule des Bistabilen Doppelspulenrelais um das Numpad aus zu schalten
+
 // Allgemein
 const uint8_t LCD_updateRate = 200;  // Intervall mit dem das LCD geupdated wird
 uint32_t LCD_lastUpdate = 0;         // Wann das LCD das letzte mal geupdated wurde
@@ -188,6 +192,10 @@ void setup() {
   //Allgemein
   Serial.begin(115200);
   pinMode(13, OUTPUT);  // Statusanzeige für Shift / Bluetooth im Setup verbunden
+
+  // Relais (Um-/ Abschaltung)
+  pinMode(Relais_powerOn, OUTPUT);
+  pinMode(Relais_powerOff, OUTPUT);
 
   // LCD
   lcd.init();       // LCD initialisieren
@@ -225,7 +233,7 @@ void loop() {
   LCD_update();
 
   LCD_battery(1, 1, 15, 0, 1);  //Batteriesymbol: (Ladestand, Ladevorgang, X Position, Y Position, Anzeigen)
-  
+
   if (Button_pressed[Num0]) Keyboard.print("0");
   if (Button_pressed[Num1]) Keyboard.print("1");
   if (Button_pressed[Num2]) Keyboard.print("2");
@@ -238,8 +246,12 @@ void loop() {
   if (Button_pressed[Num9]) Keyboard.print("9");
   if (Button_pressed[Return]) Keyboard.println();
 
+  digitalWrite(Relais_powerOn, HIGH /*PISO_debouncedState[F1]*/);
+  digitalWrite(Relais_powerOff, LOW /*PISO_debouncedState[F2]*/);
+
+
 }
-  /*
+/*
   for (uint8_t a = 0; a < PISO_anzahlKanaele; a++)
     if (PISO_pressed[a] && a != Shift_button) Shift_state = 0;  // Wenn belibige Taste bis auf Shift gedrückt wird Shift deaktivieren
   if (PISO_pressed[Shift_button]) Shift_state = !Shift_state;   // Wenn Shift gedrückt wird Shift umschalten
@@ -286,7 +298,7 @@ void loop() {
   if (PISO_pressed[Num30])
   if (PISO_pressed[Num31])
   */
-  //}
+//}
 
 /*
   Keyboard.println("Hello World");  Text mit enter

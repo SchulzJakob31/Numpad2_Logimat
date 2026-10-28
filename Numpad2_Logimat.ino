@@ -199,7 +199,7 @@ void setup() {
 
   // Startupsequenz um das System starten zu lassen
   digitalWrite(Relais_powerOn, HIGH);
-  delay(100);
+  delay(50);
   digitalWrite(Relais_powerOn, LOW);
 
 
@@ -238,11 +238,14 @@ void loop() {
   Button_pressedTranslate();
   LCD_update();
 
-  if (Button_pressed[F1]) digitalWrite(Relais_powerOff, HIGH);
+  // Numpad ausschalten sobald die Funktionstaste 1 gedrückt wird
+  if (Button_pressed[F1]) {
+    digitalWrite(Relais_powerOff, HIGH);
+    delay(50);
+    digitalWrite(Relais_powerOff, LOW);
+  }
 
   //LCD_battery(1, 1, 0, 0, 1);  //Batteriesymbol: (Ladestand, Ladevorgang, X Position, Y Position, Anzeigen)
-  lcd.setCursor(0, 0);
-  lcd.print("hello, world!");
 
   if (Button_pressed[Num0]) Keyboard.print("0");
   if (Button_pressed[Num1]) Keyboard.print("1");
@@ -254,6 +257,12 @@ void loop() {
   if (Button_pressed[Num7]) Keyboard.print("7");
   if (Button_pressed[Num8]) Keyboard.print("8");
   if (Button_pressed[Num9]) Keyboard.print("9");
+  if (Button_pressed[F2]) Mouse.move(10, 10);
+  if (Button_pressed[F3]) Mouse.move(-10, -10);
+  if (Button_pressed[F5]) Keyboard.print("STAN");
+  if (Button_pressed[F6]) Keyboard.print("STAN0");
+  if (Button_pressed[F7]) Keyboard.print("STAN00");
+  if (Button_pressed[F8]) Keyboard.print("STAN000");
   if (Button_pressed[Return]) Keyboard.println();
   //if (Button_pressed[F1]) Keyboard.print("F1");
 

@@ -192,10 +192,16 @@ void setup() {
   //Allgemein
   Serial.begin(115200);
   pinMode(13, OUTPUT);  // Statusanzeige für Shift / Bluetooth im Setup verbunden
-
+  
   // Relais (Um-/ Abschaltung)
   pinMode(Relais_powerOn, OUTPUT);
   pinMode(Relais_powerOff, OUTPUT);
+
+  // Startupsequenz um das System starten zu lassen
+  digitalWrite(Relais_powerOn, HIGH);
+  delay(100);
+  digitalWrite(Relais_powerOn, LOW);
+
 
   // LCD
   lcd.init();       // LCD initialisieren
@@ -232,7 +238,11 @@ void loop() {
   Button_pressedTranslate();
   LCD_update();
 
-  LCD_battery(1, 1, 15, 0, 1);  //Batteriesymbol: (Ladestand, Ladevorgang, X Position, Y Position, Anzeigen)
+  if (Button_pressed[F1]) digitalWrite(Relais_powerOff, HIGH);
+
+  //LCD_battery(1, 1, 0, 0, 1);  //Batteriesymbol: (Ladestand, Ladevorgang, X Position, Y Position, Anzeigen)
+  lcd.setCursor(0, 0);
+  lcd.print("hello, world!");
 
   if (Button_pressed[Num0]) Keyboard.print("0");
   if (Button_pressed[Num1]) Keyboard.print("1");
@@ -245,10 +255,7 @@ void loop() {
   if (Button_pressed[Num8]) Keyboard.print("8");
   if (Button_pressed[Num9]) Keyboard.print("9");
   if (Button_pressed[Return]) Keyboard.println();
-
-  digitalWrite(Relais_powerOn, HIGH /*PISO_debouncedState[F1]*/);
-  digitalWrite(Relais_powerOff, LOW /*PISO_debouncedState[F2]*/);
-
+  //if (Button_pressed[F1]) Keyboard.print("F1");
 
 }
 /*

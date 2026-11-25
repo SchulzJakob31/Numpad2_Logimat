@@ -14,14 +14,20 @@ const uint8_t PISO_anzahl = 4;                       // Anzahl der Schieberegist
 const uint8_t PISO_anzahlKanaele = PISO_anzahl * 8;  // Anzahl der Eingangskanäle aller Schieberegister
 bool PISO_data[PISO_anzahlKanaele];                  // Rohe daten die vom Schieberegister empfangen wurden
 
-void PISO_read() {
-  digitalWrite(PISO_pinLatch, LOW);
-  digitalWrite(PISO_pinLatch, HIGH);  // Daten ins Schieberegister laden
+const uint8_t PISO_updateRate = 15;
+uint32_t PISO_lastUpdate;
 
-  for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
-    PISO_data[a] = digitalRead(PISO_pinData);  // Zustand vom ersten Eingang vom Schieberegister lesen und abspeichern
-    digitalWrite(PISO_pinClock, HIGH);         // Zum nächsten Eingang weiter Takten und wiederholen
-    digitalWrite(PISO_pinClock, LOW);
+void PISO_read() {
+  if (millis() - PISO_lastUpdate >= PISO_updateRate) {
+    PISO_lastUpdate = millis();
+
+    digitalWrite(PISO_pinLatch, LOW);
+    digitalWrite(PISO_pinLatch, HIGH);  // Daten ins Schieberegister laden
+    for (uint8_t a = 0; a < PISO_anzahlKanaele; a++) {
+      PISO_data[a] = digitalRead(PISO_pinData);  // Zustand vom ersten Eingang vom Schieberegister lesen und abspeichern
+      digitalWrite(PISO_pinClock, HIGH);         // Zum nächsten Eingang weiter Takten und wiederholen
+      digitalWrite(PISO_pinClock, LOW);
+    }
   }
 }
 
@@ -192,7 +198,7 @@ void setup() {
   //Allgemein
   Serial.begin(115200);
   pinMode(13, OUTPUT);  // Statusanzeige für Shift / Bluetooth im Setup verbunden
-  
+
   // Relais (Um-/ Abschaltung)
   pinMode(Relais_powerOn, OUTPUT);
   pinMode(Relais_powerOff, OUTPUT);
@@ -247,25 +253,54 @@ void loop() {
 
   //LCD_battery(1, 1, 0, 0, 1);  //Batteriesymbol: (Ladestand, Ladevorgang, X Position, Y Position, Anzeigen)
 
-  if (Button_pressed[Num0]) Keyboard.print("0");
-  if (Button_pressed[Num1]) Keyboard.print("1");
-  if (Button_pressed[Num2]) Keyboard.print("2");
-  if (Button_pressed[Num3]) Keyboard.print("3");
-  if (Button_pressed[Num4]) Keyboard.print("4");
-  if (Button_pressed[Num5]) Keyboard.print("5");
-  if (Button_pressed[Num6]) Keyboard.print("6");
-  if (Button_pressed[Num7]) Keyboard.print("7");
-  if (Button_pressed[Num8]) Keyboard.print("8");
-  if (Button_pressed[Num9]) Keyboard.print("9");
-  if (Button_pressed[F2]) Mouse.move(10, 10);
-  if (Button_pressed[F3]) Mouse.move(-10, -10);
-  if (Button_pressed[F5]) Keyboard.print("STAN");
-  if (Button_pressed[F6]) Keyboard.print("STAN0");
-  if (Button_pressed[F7]) Keyboard.print("STAN00");
-  if (Button_pressed[F8]) Keyboard.print("STAN000");
-  if (Button_pressed[Return]) Keyboard.println();
-  //if (Button_pressed[F1]) Keyboard.print("F1");
 
+  switch (Shift_state) {
+    case 0:
+      if (Button_pressed[Num0]) Keyboard.print("0");
+      if (Button_pressed[Num1]) Keyboard.print("1");
+      if (Button_pressed[Num2]) Keyboard.print("2");
+      if (Button_pressed[Num3]) Keyboard.print("3");
+      if (Button_pressed[Num4]) Keyboard.print("4");
+      if (Button_pressed[Num5]) Keyboard.print("5");
+      if (Button_pressed[Num6]) Keyboard.print("6");
+      if (Button_pressed[Num7]) Keyboard.print("7");
+      if (Button_pressed[Num8]) Keyboard.print("8");
+      if (Button_pressed[Num9]) Keyboard.print("9");
+      if (Button_pressed[F2]) Mouse.move(10, 10);
+      if (Button_pressed[F3]) Mouse.move(-10, -10);
+      if (Button_pressed[F5]) Keyboard.print("STAN");
+      if (Button_pressed[F6]) Keyboard.print("STAN0");
+      if (Button_pressed[F7]) Keyboard.print("STAN00");
+      if (Button_pressed[F8]) Keyboard.print("STAN000");
+      if (Button_pressed[Return]) Keyboard.println();
+      //if (Button_pressed[F1]) Keyboard.print("F1");
+      break;
+
+    case 1:
+      if (Button_pressed[Num0]) Keyboard.print("0");
+      if (Button_pressed[Num1]) Keyboard.print("1");
+      if (Button_pressed[Num2]) Keyboard.print("2");
+      if (Button_pressed[Num3]) Keyboard.print("3");
+      if (Button_pressed[Num4]) Keyboard.print("4");
+      if (Button_pressed[Num5]) Keyboard.print("5");
+      if (Button_pressed[Num6]) Keyboard.print("6");
+      if (Button_pressed[Num7]) Keyboard.print("7");
+      if (Button_pressed[Num8]) Keyboard.print("8");
+      if (Button_pressed[Num9]) Keyboard.print("9");
+      if (Button_pressed[F2]) Mouse.move(10, 10);
+      if (Button_pressed[F3]) Mouse.move(-10, -10);
+      if (Button_pressed[F5]) Keyboard.print("STAN");
+      if (Button_pressed[F6]) Keyboard.print("STAN0");
+      if (Button_pressed[F7]) Keyboard.print("STAN00");
+      if (Button_pressed[F8]) Keyboard.print("STAN000");
+      if (Button_pressed[Return]) Keyboard.println();
+      break;
+  }
+
+
+  for (uint8_t a; a < PISO_anzahlKanaele; a++)
+    if (Button_pressed[a] && a != 21 /*21=Shiftbutton*/) Shift_state = 0;
+  if (Button_pressed[F10]) Shift_state = !Shift_state;
 }
 /*
   for (uint8_t a = 0; a < PISO_anzahlKanaele; a++)

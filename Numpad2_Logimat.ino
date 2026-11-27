@@ -68,7 +68,7 @@ enum PISO_anzahlKanaele {
   Num8,
   Num9,
   Return,
-  Loeschen,
+  Shift,
   F1,
   F2,
   F3,
@@ -77,8 +77,8 @@ enum PISO_anzahlKanaele {
   F6,
   F7,
   F8,
-  F9,
-  F10,
+  Loeschen,
+  Backspace,
   Empty1,
   Empty2,
   Empty3,
@@ -103,7 +103,7 @@ void Button_pressedTranslate() {
   Button_pressed[Num8] = PISO_pressed[9];
   Button_pressed[Num9] = PISO_pressed[3];
   Button_pressed[Return] = PISO_pressed[1];
-  Button_pressed[Loeschen] = PISO_pressed[2];
+  Button_pressed[Shift] = PISO_pressed[2];
   Button_pressed[F1] = PISO_pressed[18];
   Button_pressed[F2] = PISO_pressed[19];
   Button_pressed[F3] = PISO_pressed[13];
@@ -112,8 +112,8 @@ void Button_pressedTranslate() {
   Button_pressed[F6] = PISO_pressed[10];
   Button_pressed[F7] = PISO_pressed[12];
   Button_pressed[F8] = PISO_pressed[6];
-  Button_pressed[F9] = PISO_pressed[4];
-  Button_pressed[F10] = PISO_pressed[5];
+  Button_pressed[Loeschen] = PISO_pressed[4];
+  Button_pressed[Backspace] = PISO_pressed[5];
 }
 
 
@@ -273,21 +273,140 @@ void loop() {
       if (Button_pressed[F7]) Keyboard.print("STAN00");
       if (Button_pressed[F8]) Keyboard.print("STAN000");
       if (Button_pressed[Return]) Keyboard.println();
+      if (Button_pressed[Loeschen]) {
+        for (uint8_t a = 0; a < 10; a++) {
+          Mouse.move(60, 60);
+        }
+        Mouse.move(-28.5, -70.38);
+        delay(1);
+        Mouse.click(MOUSE_LEFT);
+      }
+      if (Button_pressed[Backspace]) Keyboard.print(KEY_BACKSPACE);
       //if (Button_pressed[F1]) Keyboard.print("F1");
       break;
 
     case 1:
-      if (Button_pressed[Num0]) Keyboard.print("0");
-      if (Button_pressed[Num1]) Keyboard.print("1");
-      if (Button_pressed[Num2]) Keyboard.print("2");
-      if (Button_pressed[Num3]) Keyboard.print("3");
-      if (Button_pressed[Num4]) Keyboard.print("4");
-      if (Button_pressed[Num5]) Keyboard.print("5");
-      if (Button_pressed[Num6]) Keyboard.print("6");
-      if (Button_pressed[Num7]) Keyboard.print("7");
-      if (Button_pressed[Num8]) Keyboard.print("8");
-      if (Button_pressed[Num9]) Keyboard.print("9");
-      if (Button_pressed[F2]) Mouse.move(10, 10);
+      if (Button_pressed[Num0]) {
+        for (uint8_t a = 0; a < 10; a++) {
+          Mouse.move(60, 60);
+        }
+        Mouse.move(-28.5, -50);
+        Mouse.move(0, -50);
+        Mouse.move(0, -50);
+        Mouse.move(0, -13.5);
+        delay(1);
+        Mouse.click(MOUSE_LEFT);
+      }
+      if (Button_pressed[Num1]) {
+        for (uint8_t a = 0; a < 10; a++) {
+          Mouse.move(60, 60);
+        }
+        Mouse.move(-28.5, -50);
+        Mouse.move(0, -50);
+        Mouse.move(0, -30);
+        delay(1);
+        Mouse.click(MOUSE_LEFT);
+      }
+      if (Button_pressed[Num2]) {
+        for (uint8_t a = 0; a < 10; a++) {
+          Mouse.move(-60, -60);
+        }
+        Mouse.move(50, 50);
+        Mouse.move(24.67, 50);
+        Mouse.move(0, 50);
+        Mouse.move(0, 44.29);
+        delay(1);
+        Mouse.click(MOUSE_LEFT);
+        delay(1);
+        Keyboard.print("LM1/");
+      }
+      if (Button_pressed[Num3]) {
+        for (uint8_t a = 0; a < 10; a++) {
+          Mouse.move(-60, -60);
+        }
+        Mouse.move(50, 50);
+        Mouse.move(24.67, 50);
+        Mouse.move(0, 50);
+        Mouse.move(0, 50);
+        Mouse.move(0, 31.67);
+        delay(1);
+        Mouse.click(MOUSE_LEFT);
+      }
+      if (Button_pressed[Num4]) {
+        Keyboard.press(KEY_TAB);
+        Keyboard.releaseAll();
+      }
+      if (Button_pressed[Num5]) {
+        for (uint8_t a = 0; a < 10; a++) {
+          Mouse.move(60, 60);
+        }
+        Mouse.move(-50, 0);
+        Mouse.move(-15.25, 0);
+        delay(1);
+        Mouse.click(MOUSE_LEFT);
+        delay(1);
+        for (uint8_t a = 0; a < 10; a++) {
+          Mouse.move(-60, -60);
+        }
+        delay(1);
+        Mouse.move(50, 50);
+        Mouse.move(35.71, 50);
+        Mouse.move(0, 50);
+        Mouse.move(0,44.29);
+        Mouse.click(MOUSE_LEFT);
+        delay(1);
+        for (uint8_t a = 0; a < 10; a++) {
+          Mouse.move(60, 60);
+        }
+        delay(1);
+        Mouse.move(-50, -50);
+        Mouse.move(-15.25, -50);
+        Mouse.move(0, -30);
+        delay(1);
+        Mouse.click(MOUSE_LEFT);
+      }
+      if (Button_pressed[Num6]) {
+        Keyboard.press(KEY_LEFT_CTRL);
+        Keyboard.print("L");
+        Keyboard.releaseAll();
+      }
+      if (Button_pressed[Num7]) {
+        for (uint8_t a = 0; a < 10; a++) {
+          Mouse.move(-60, -60);
+        }
+        Mouse.move(22.5, 28.5);
+        delay(1);
+        Mouse.click(MOUSE_LEFT);
+      }
+      if (Button_pressed[Num8]) {
+        for (uint8_t a = 0; a < 10; a++) {
+          Mouse.move(-60, -60);
+        }
+        Mouse.move(50, 28.5);
+        Mouse.move(10, 0);
+        delay(1);
+        Mouse.click(MOUSE_LEFT);
+      }
+      if (Button_pressed[Num9]) {
+        for (uint8_t a = 0; a < 10; a++) {
+          Mouse.move(-60, -60);
+        }
+        Mouse.move(50, 28.5);
+        Mouse.move(35, 0);
+        delay(1);
+        Mouse.click(MOUSE_LEFT);
+      }
+      if (Button_pressed[F2]) {
+        Mouse.move(-28.5, -70.38);
+        //delay(1000);
+        //Mouse.move(24.67, 50);
+        //delay(1000);
+        //Mouse.move(0, 50);
+        //delay(1000);
+        //Mouse.move(0, 50);
+        //delay(1000);
+        //Mouse.move(0, 31.67);
+      }
       if (Button_pressed[F3]) Mouse.move(-10, -10);
       if (Button_pressed[F5]) Keyboard.print("STAN");
       if (Button_pressed[F6]) Keyboard.print("STAN0");
@@ -299,8 +418,8 @@ void loop() {
 
 
   for (uint8_t a; a < PISO_anzahlKanaele; a++)
-    if (Button_pressed[a] && a != 21 /*21=Shiftbutton*/) Shift_state = 0;
-  if (Button_pressed[F10]) Shift_state = !Shift_state;
+    if (Button_pressed[a] && a != 11 /*11=Shiftbutton*/) Shift_state = 0;
+  if (Button_pressed[Shift]) Shift_state = !Shift_state;
 }
 /*
   for (uint8_t a = 0; a < PISO_anzahlKanaele; a++)
@@ -358,7 +477,7 @@ void loop() {
   Keyboard.press(KEY_LEFT_CTRL);
   Keyboard.press(KEY_LEFT_ALT);
   Keyboard.press(KEY_DELETE);
-  Keyboard.releaseAll();
+  Keyboard.releaseAll();   Keyboard.press hält tasten gedrückt damit man mit Tastenkombinationen arbeiten kann. .releaseAll() lässt dann alle gedrückten Tasten wieder los
   Mouse.move(10,10); Maus nach unten rechts bewegen
   Mouse.move(0,0,-1); Runter scrollen
   Mouse.click(MOUSE_LEFT);

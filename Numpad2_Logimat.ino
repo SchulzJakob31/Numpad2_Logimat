@@ -277,11 +277,16 @@ void loop() {
         for (uint8_t a = 0; a < 10; a++) {
           Mouse.move(60, 60);
         }
+        delay(10);
         Mouse.move(-28.5, -70.38);
-        delay(1);
+        delay(10);
         Mouse.click(MOUSE_LEFT);
       }
-      if (Button_pressed[Backspace]) Keyboard.print(KEY_BACKSPACE);
+      if (Button_pressed[Backspace]) {
+        Keyboard.press(KEY_BACKSPACE);
+        delay(1);
+        Keyboard.releaseAll();
+      }
       //if (Button_pressed[F1]) Keyboard.print("F1");
       break;
 
@@ -290,46 +295,50 @@ void loop() {
         for (uint8_t a = 0; a < 10; a++) {
           Mouse.move(60, 60);
         }
+        delay(10);
         Mouse.move(-28.5, -50);
         Mouse.move(0, -50);
         Mouse.move(0, -50);
         Mouse.move(0, -13.5);
-        delay(1);
+        delay(10);
         Mouse.click(MOUSE_LEFT);
       }
       if (Button_pressed[Num1]) {
         for (uint8_t a = 0; a < 10; a++) {
           Mouse.move(60, 60);
         }
+        delay(10);
         Mouse.move(-28.5, -50);
         Mouse.move(0, -50);
         Mouse.move(0, -30);
-        delay(1);
+        delay(10);
         Mouse.click(MOUSE_LEFT);
       }
       if (Button_pressed[Num2]) {
         for (uint8_t a = 0; a < 10; a++) {
           Mouse.move(-60, -60);
         }
+        delay(10);
         Mouse.move(50, 50);
         Mouse.move(24.67, 50);
         Mouse.move(0, 50);
         Mouse.move(0, 44.29);
-        delay(1);
+        delay(10);
         Mouse.click(MOUSE_LEFT);
-        delay(1);
+        delay(10);
         Keyboard.print("LM1/");
       }
       if (Button_pressed[Num3]) {
         for (uint8_t a = 0; a < 10; a++) {
           Mouse.move(-60, -60);
         }
+        delay(10);
         Mouse.move(50, 50);
         Mouse.move(24.67, 50);
         Mouse.move(0, 50);
         Mouse.move(0, 50);
         Mouse.move(0, 31.67);
-        delay(1);
+        delay(10);
         Mouse.click(MOUSE_LEFT);
       }
       if (Button_pressed[Num4]) {
@@ -340,60 +349,66 @@ void loop() {
         for (uint8_t a = 0; a < 10; a++) {
           Mouse.move(60, 60);
         }
+        delay(10);
         Mouse.move(-50, 0);
         Mouse.move(-15.25, 0);
-        delay(1);
+        delay(10);
         Mouse.click(MOUSE_LEFT);
-        delay(1);
+        delay(10);
         for (uint8_t a = 0; a < 10; a++) {
           Mouse.move(-60, -60);
         }
-        delay(1);
+        delay(10);
         Mouse.move(50, 50);
         Mouse.move(35.71, 50);
         Mouse.move(0, 50);
         Mouse.move(0,44.29);
+        delay(10);
         Mouse.click(MOUSE_LEFT);
-        delay(1);
+        delay(10);
         for (uint8_t a = 0; a < 10; a++) {
           Mouse.move(60, 60);
         }
-        delay(1);
+        delay(10);
         Mouse.move(-50, -50);
         Mouse.move(-15.25, -50);
         Mouse.move(0, -30);
-        delay(1);
+        delay(10);
         Mouse.click(MOUSE_LEFT);
       }
       if (Button_pressed[Num6]) {
         Keyboard.press(KEY_LEFT_CTRL);
-        Keyboard.print("L");
+        Keyboard.press('l');
+        delay(50);
         Keyboard.releaseAll();
       }
       if (Button_pressed[Num7]) {
         for (uint8_t a = 0; a < 10; a++) {
           Mouse.move(-60, -60);
         }
+        delay(10);
         Mouse.move(22.5, 28.5);
-        delay(1);
+        delay(10);
         Mouse.click(MOUSE_LEFT);
       }
       if (Button_pressed[Num8]) {
         for (uint8_t a = 0; a < 10; a++) {
           Mouse.move(-60, -60);
         }
+        delay(10);
         Mouse.move(50, 28.5);
         Mouse.move(10, 0);
-        delay(1);
+        delay(10);
         Mouse.click(MOUSE_LEFT);
       }
       if (Button_pressed[Num9]) {
         for (uint8_t a = 0; a < 10; a++) {
           Mouse.move(-60, -60);
         }
+        delay(10);
         Mouse.move(50, 28.5);
         Mouse.move(35, 0);
-        delay(1);
+        delay(10);
         Mouse.click(MOUSE_LEFT);
       }
       if (Button_pressed[F2]) {
@@ -413,6 +428,12 @@ void loop() {
       if (Button_pressed[F7]) Keyboard.print("STAN00");
       if (Button_pressed[F8]) Keyboard.print("STAN000");
       if (Button_pressed[Return]) Keyboard.println();
+      if (Button_pressed[Loeschen]) {
+        Keyboard.press(KEY_LEFT_CTRL);
+        Keyboard.press('b');
+        delay(50);
+        Keyboard.releaseAll();
+      }
       break;
   }
 
